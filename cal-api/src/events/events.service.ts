@@ -5,15 +5,18 @@ import {
 } from '@nestjs/common';
 
 import { v4 as uuidv4 } from 'uuid';
+import { Cron } from '@nestjs/schedule';
 
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-
+import { EventsGateway } from './events.gateway';
 import { Event } from './entities/event.entity';
 
 @Injectable()
 export class EventsService {
+  constructor(private readonly eventsGateway: EventsGateway) {}
   private events: Event[] = [];
+  private notifiedEventIds = new Set<string>();
 
   create(createEventDto: CreateEventDto, file?: Express.Multer.File): Event {
     const now = new Date();
@@ -112,5 +115,25 @@ export class EventsService {
 
     this.events.splice(index, 1);
     return true;
+  }
+
+  @Cron('*/1 * * * *')
+  checkAndSendEventReminder() {
+    const now = new Date();
+
+    for (const event of this.events) {
+      const startTime = new Date(event.startTime);
+      const timeLeft = startTime.getTime() - now.getTime();
+      // console.log(startTime);
+
+      if (
+        timeLeft >= 0 &&
+        timeLeft <= 60000 &&
+        !this.notifiedEventIds.has(event.id)
+      ) {
+        this.eventsGateway.sendEventReminder(event);
+        this.notifiedEventIds.add(event.id);
+      }
+    }
   }
 }

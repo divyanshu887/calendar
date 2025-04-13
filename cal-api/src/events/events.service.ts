@@ -99,10 +99,6 @@ export class EventsService {
       return eventDate.toLocaleDateString('en-CA') === targetDate;
     });
 
-    if (events.length === 0) {
-      throw new NotFoundException(`No events found for the date: ${date}`);
-    }
-
     return events;
   }
 
@@ -124,7 +120,6 @@ export class EventsService {
     for (const event of this.events) {
       const startTime = new Date(event.startTime);
       const timeLeft = startTime.getTime() - now.getTime();
-      // console.log(startTime);
 
       if (
         timeLeft >= 0 &&
@@ -133,6 +128,7 @@ export class EventsService {
       ) {
         this.eventsGateway.sendEventReminder(event);
         this.notifiedEventIds.add(event.id);
+        console.log('event emitted');
       }
     }
   }

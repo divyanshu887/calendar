@@ -1,13 +1,15 @@
 import React from 'react';
 import CalendarApp from './Components/CalendarApp';
 import './index.css'
-// import './Components/CalendarApp.css'; //??
+import { SocketProvider } from "./Context/SocketContext";
 
 
 const App = () => {
   return (
     <div className="container">
-      <CalendarApp />
+     <SocketProvider>
+        <CalendarApp />
+      </SocketProvider>
     </div>
   );
 };

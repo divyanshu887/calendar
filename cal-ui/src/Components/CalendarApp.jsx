@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDate, isSameDay } from '../utils';
 
 import '../Components/CalendarApp.css';
@@ -8,6 +8,8 @@ import Calendar from './Calendar/Calendar';
 import EventCard from './EventCard/EventCard';
 import EventFormPopup from './EventForm/EventForm';
 import { createEvent, deleteEvent } from '../api';
+import { useSocket } from '../Context/SocketContext';
+import Modal from './Modal/Modal';
 
 const CalendarApp = () => {
   const curDate = new Date();
@@ -40,11 +42,44 @@ const CalendarApp = () => {
   };
 
   const [events, setEvents] = useState([]);
+
   const [hours, setHours] = useState('00');
   const [minutes, setMinutes] = useState('00');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [media, setMedia] = useState(null);
+  const [alerts, setAlerts] = useState([]);
+
+  const [openAlerts, setOpenAlerts] = useState({});
+
+  const handleDismiss = id => {
+    setAlerts(prevAlerts => prevAlerts.filter(a => a.id !== id));
+    setOpenAlerts(prev => ({ ...prev, [id]: false }));
+  };
+
+  const handleSnooze = id => {
+    setOpenAlerts(prev => ({ ...prev, [id]: false }));
+    setTimeout(() => {
+      setOpenAlerts(prev => ({ ...prev, [id]: true }));
+    }, 5 * 60 * 1000); // 5 minute snooze
+  };
+
+  const socket = useSocket(); // Get the socket instance from context
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+    });
+
+    socket.on('eventStarting', event => {
+      console.log('Event starting:', event);
+      setAlerts(prevAlerts => [...prevAlerts, event]);
+      // setEvents(prevEvents => [...prevEvents, event]);
+
+      // popup alert with snooze and dismiss button
+    });
+  }, [socket]);
 
   const fileInputRef = useRef(null);
 
@@ -57,7 +92,7 @@ const CalendarApp = () => {
       description,
       media,
     };
-// 
+    //
     createEvent({
       title,
       description,
@@ -67,7 +102,7 @@ const CalendarApp = () => {
     })
       .then(data => {
         console.log('Event created:', data);
-        newEvent.id = data.id
+        newEvent.id = data.id;
         setEvents(prevEvents => {
           if (editingEvent) {
             return prevEvents.map(event =>
@@ -168,6 +203,15 @@ const CalendarApp = () => {
           />
         ))}
       </div>
+      {alerts.map(alert => (
+        <Modal
+          key={alert.id}
+          isOpen={openAlerts[alert.id] ?? true}
+          event={alert}
+          onDismiss={() => handleDismiss(alert.id)}
+          onSnooze={() => handleSnooze(alert.id)}
+        />
+      ))}
     </div>
   );
 };

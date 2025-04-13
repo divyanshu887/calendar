@@ -1,69 +1,68 @@
 .event {
-    width: 100%;
-    height: fit-content;
-    background-color: #00a3ff;
-    padding: 1.5rem 0;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
-    position: relative;
-  }
-  
+  width: 100%;
+  height: fit-content;
+  background-color: #00a3ff;
+  padding: 1.5rem 0;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
 .event-date-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 25%;
-    border-right: 0.1rem solid rgba(255, 255, 255, 0.5);
-  }
-  
-  .event-date {
-    font-size: clamp(1rem, 1cqi, 1.2rem);
-    color: #ddd;
-  }
-  
-  .event-time {
-    font-size: clamp(1.3rem, 1cqi, 1.6rem);
-    line-height: 4rem;
-    font-weight: bold;
-    color: #fff;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 25%;
+  border-right: 0.1rem solid rgba(255, 255, 255, 0.5);
+}
 
-  .event-content {
-    line-height: 2rem;
-    color: #fff;
-    width: 75%;
-    padding: 0 3rem 0 1rem;
-    overflow-wrap: break-word;
-  }
-  
-  .event-title {
-    font-size: clamp(1.2rem, 1cqi, 1.4rem);
-    font-weight: bolder;
-  }
-  
-  .event-text {
-    font-weight: lighter;
-  }
+.event-date {
+  font-size: clamp(1rem, 1cqi, 1.2rem);
+  color: #ddd;
+}
 
-  .event-btns {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 1rem;
-    display: flex;
-    flex-direction: column;
-    row-gap: 1rem;
-  }
-  .event-btns i {
-    font-size: 1.6rem;
-    color: #fff;
-    cursor: pointer;
-  }
-  
-  .event-media-content {
-    width: 90%;
-    aspect-ratio: 5/2;
-  }
-  
+.event-time {
+  font-size: clamp(1.3rem, 1cqi, 1.6rem);
+  line-height: 4rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.event-content {
+  line-height: 2rem;
+  color: #fff;
+  width: 75%;
+  padding: 0 3rem 0 1rem;
+  overflow-wrap: break-word;
+}
+
+.event-title {
+  font-size: clamp(1.2rem, 1cqi, 1.4rem);
+  font-weight: bolder;
+}
+
+.event-text {
+  font-weight: lighter;
+}
+
+.event-btns {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+}
+.event-btns i {
+  font-size: 1.6rem;
+  color: #fff;
+  cursor: pointer;
+}
+
+.event-media-content {
+  width: 90%;
+  aspect-ratio: 5/2;
+}

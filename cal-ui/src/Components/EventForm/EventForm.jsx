@@ -1,4 +1,5 @@
 import React from 'react';
+import './EventForm.css';
 
 const EventForm = ({
   show,

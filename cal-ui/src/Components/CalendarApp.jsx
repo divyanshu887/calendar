@@ -7,6 +7,7 @@ import '../Components/CalendarApp.css';
 import Calendar from './Calendar/Calendar';
 import EventCard from './EventCard/EventCard';
 import EventFormPopup from './EventForm/EventForm';
+import { createEvent, deleteEvent } from '../api';
 
 const CalendarApp = () => {
   const curDate = new Date();
@@ -56,27 +57,39 @@ const CalendarApp = () => {
       description,
       media,
     };
-
-    setEvents(prevEvents => {
-      if (editingEvent) {
-        return prevEvents.map(event =>
-          event.id === editingEvent.id ? newEvent : event
-        );
-      }
-      return [...prevEvents, newEvent];
-    });
-
-    setHours('00');
-    setMinutes('00');
-    setTitle('');
-    setDescription('');
-    setMedia(null);
-    SetShowEventPopup(false);
-    setEditingEvent(null);
+// 
+    createEvent({
+      title,
+      description,
+      date: selectedDate,
+      time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
+      media,
+    })
+      .then(data => {
+        console.log('Event created:', data);
+        newEvent.id = data.id
+        setEvents(prevEvents => {
+          if (editingEvent) {
+            return prevEvents.map(event =>
+              event.id === editingEvent.id ? newEvent : event
+            );
+          }
+          return [...prevEvents, newEvent];
+        });
+        setHours('00');
+        setMinutes('00');
+        setTitle('');
+        setDescription('');
+        setMedia(null);
+        SetShowEventPopup(false);
+        setEditingEvent(null);
+      })
+      .catch(error => {
+        alert(`Error: ${error.message}`);
+      });
   };
 
   const handleEditEvent = event => {
-    
     SetSelectedDate(new Date(event.date));
     setHours(event.time.split(':')[0]);
     setMinutes(event.time.split(':')[1]);
@@ -100,8 +113,14 @@ const CalendarApp = () => {
     }
   };
 
-  const handleDeleteEvent = id => {
-    setEvents(prevEvents => prevEvents.filter(event => event.id !== id));
+  const handleDeleteEvent = async id => {
+    try {
+      await deleteEvent(id);
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== id));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event.');
+    }
   };
 
   return (
@@ -116,7 +135,6 @@ const CalendarApp = () => {
       />
 
       <div className="events">
-        {console.log(showEventPopup, 'wqjk')}
         {showEventPopup && (
           <EventFormPopup
             show={showEventPopup}

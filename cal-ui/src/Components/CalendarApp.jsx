@@ -1,13 +1,18 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { formatDate, isSameDay } from '../utils';
+import { formatDate, isSameDay, formatTime } from '../utils';
 
 import '../Components/CalendarApp.css';
 
 import Calendar from './Calendar/Calendar';
 import EventCard from './EventCard/EventCard';
 import EventFormPopup from './EventForm/EventForm';
-import { createEvent, deleteEvent } from '../api';
+import {
+  createEvent,
+  deleteEvent,
+  fetchEventsByDate,
+  updateEvent,
+} from '../api';
 import { useSocket } from '../Context/SocketContext';
 import Modal from './Modal/Modal';
 
@@ -43,6 +48,23 @@ const CalendarApp = () => {
 
   const [events, setEvents] = useState([]);
 
+  useEffect(() => {
+    const getSelectedDateEvents = async () => {
+      try {
+        const data = await fetchEventsByDate(selectedDate);
+        console.log(data);
+
+        setEvents(data);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      }
+    };
+
+    if (selectedDate) {
+      getSelectedDateEvents();
+    }
+  }, [selectedDate]);
+
   const [hours, setHours] = useState('00');
   const [minutes, setMinutes] = useState('00');
   const [title, setTitle] = useState('');
@@ -61,10 +83,10 @@ const CalendarApp = () => {
     setOpenAlerts(prev => ({ ...prev, [id]: false }));
     setTimeout(() => {
       setOpenAlerts(prev => ({ ...prev, [id]: true }));
-    }, 5 * 60 * 1000); // 5 minute snooze
+    }, 5 * 60 * 1000);
   };
 
-  const socket = useSocket(); // Get the socket instance from context
+  const socket = useSocket();
 
   useEffect(() => {
     if (!socket) return;
@@ -75,34 +97,32 @@ const CalendarApp = () => {
     socket.on('eventStarting', event => {
       console.log('Event starting:', event);
       setAlerts(prevAlerts => [...prevAlerts, event]);
-      // setEvents(prevEvents => [...prevEvents, event]);
-
-      // popup alert with snooze and dismiss button
     });
   }, [socket]);
 
   const fileInputRef = useRef(null);
 
   const handleAddEvent = () => {
-    const newEvent = {
-      id: editingEvent ? editingEvent.id : Date.now(),
-      time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
-      date: selectedDate,
+    const eventPayload = {
       title,
       description,
+      date: selectedDate,
+      time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
       media,
     };
-    //
-    createEvent({
-      title,
-      description,
-      date: selectedDate,
-      time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
-      media,
-    })
+
+    const apiResponse = editingEvent
+      ? updateEvent(editingEvent.id, eventPayload)
+      : createEvent(eventPayload);
+
+    apiResponse
       .then(data => {
-        console.log('Event created:', data);
-        newEvent.id = data.id;
+
+        const newEvent = {
+          id: data.id,
+          ...eventPayload,
+        };
+
         setEvents(prevEvents => {
           if (editingEvent) {
             return prevEvents.map(event =>
@@ -125,9 +145,9 @@ const CalendarApp = () => {
   };
 
   const handleEditEvent = event => {
-    SetSelectedDate(new Date(event.date));
-    setHours(event.time.split(':')[0]);
-    setMinutes(event.time.split(':')[1]);
+    SetSelectedDate(new Date(event.startTime));
+    setHours(formatTime(event.startTime).split(':')[0]);
+    setMinutes(formatTime(event.startTime).split(':')[1]);
     setTitle(event.title);
     setDescription(event.description);
     setMedia(event?.media);
@@ -136,7 +156,6 @@ const CalendarApp = () => {
   };
 
   const handleMediaChange = e => {
-    console.log(e.target);
     const file = e.target.files[0];
     setMedia(file);
   };
